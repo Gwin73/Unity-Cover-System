@@ -6,9 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
 using static System.Linq.Enumerable;
-using Debug = UnityEngine.Debug;
 
-[Serializable]
 public class CoverPointsGenerator{
     private struct Edge
     {
@@ -39,16 +37,10 @@ public class CoverPointsGenerator{
             edges.Any(e => e.Equals(edge));
     }
 
-   
     public GameObject CoverPoint;
     public Transform CoverPointParent;
     public float CoverPointsDistance = 3;
     public float MaxInnerEdgeLength = 20;
-
-    [SerializeField]
-    public List<GameObject> coverPoints = new List<GameObject>();
-
-    public int CoverPointCount => coverPoints.Count;
 
     public void Generate()
     {
@@ -72,11 +64,8 @@ public class CoverPointsGenerator{
         //UnityEngine.Debug.Log("Total: " + sw.ElapsedMilliseconds);
     }
 
-    public void Remove()
-    {
-        coverPoints.ForEach(g => GameObject.DestroyImmediate(g));
-        coverPoints.Clear();
-    }
+    public void Remove() =>
+        GameObject.FindGameObjectsWithTag(CoverPoint.tag).ToList().ForEach(GameObject.DestroyImmediate);
     
     private IEnumerable<Triangle> GetNavMeshTriangles(NavMeshTriangulation nmt) =>
         nmt.indices
@@ -105,54 +94,9 @@ public class CoverPointsGenerator{
                 var d = (e.w - e.v).normalized;
                 Range(1, pointCount).ToList().ForEach(i =>
                 {
-                    var g = GameObject.Instantiate(CoverPoint, e.v + i*offset*d, Quaternion.LookRotation(Quaternion.Euler(0, -90, 0) * d)); 
-                    g.transform.SetParent(CoverPointParent);
-                    coverPoints.Add(g);
+                   var go = GameObject.Instantiate(CoverPoint, e.v + i*offset*d, Quaternion.LookRotation(Quaternion.Euler(0, -90, 0) * d), CoverPointParent);
+                   Undo.RecordObject(go, "Instatiating cover-points");
                 });
             }
         });
 }
-
-/*private void PlacePoints(Edge[] edges) //LINQ
-{
-    foreach (var edge in edges)
-    {
-        if (edge.Length < 1)
-            continue;
-
-        var pointCount = (int) Math.Ceiling(edge.Length / CoverPointsDistance);
-        var offset = edge.Length / (pointCount + 1);
-
-        for (int i = 1; i <= pointCount; i++)
-        {
-            var g = Instantiate(CoverPoint, edge.v + i * offset * (edge.w - edge.v).normalized, Quaternion.LookRotation(Quaternion.Euler(0, -90, 0) * (edge.w - edge.v))); //.normalized
-            g.transform.SetParent(CoverPointParent);
-        }
-    }
-}*/
-
-/*private void PlaceP(List<Edge> edges, int index)
-{
-    if (index >= edges.Count()) return;
-
-    var e = edges[index];
-    if (e.Length >= 1)
-    {
-        var pointCount = (int) Math.Ceiling(e.Length / CoverPointsDistance);
-        var offset = e.Length / (pointCount + 1);
-        void L(int i)
-        {
-            if (i >= pointCount + 1) return;
-
-            var d = (e.w - e.v).normalized;
-            var g = Instantiate(CoverPoint, e.v + i * offset * d, Quaternion.LookRotation(Quaternion.Euler(0, -90, 0) * d)); //.normalized
-            g.transform.SetParent(CoverPointParent);
-            coverPoints.Add(g);
-
-            L(i + 1);
-        }
-        L(0);
-    }
-
-    PlaceP(edges, index+1);
-}*/

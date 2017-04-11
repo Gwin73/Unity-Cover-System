@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using static CoverPointsGenerator;
 
 public class CoverPointsGeneratorWindow: EditorWindow
 {
@@ -26,16 +27,16 @@ public class CoverPointsGeneratorWindow: EditorWindow
 
         if (GUILayout.Button("Generate"))
             cpg.Generate();
-        
-        EditorGUI.BeginDisabledGroup(cpg.CoverPointCount == 0);
-        if (GUILayout.Button("Remove"))
-        {
-           GameObject.FindGameObjectsWithTag("CoverPoint").ToList().ForEach(DestroyImmediate);
 
-            //cpg.Remove();
-        }
+        //cpg.CoverPoint?.tag
+        var coverPoints = GameObject.FindGameObjectsWithTag("CoverPoint");
+        var coverCount = coverPoints?.Length ?? 0;
+
+        EditorGUI.BeginDisabledGroup(coverCount == 0);
+        if (GUILayout.Button("Remove"))
+            cpg.Remove();
         EditorGUI.EndDisabledGroup();
 
-        EditorGUILayout.LabelField($"Count: {cpg.CoverPointCount}");
+        EditorGUILayout.LabelField($"Count: {coverCount}");
     }
 }
