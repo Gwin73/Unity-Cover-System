@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using static System.Linq.Enumerable;
 
+[Serializable]
 public class CoverPointsGenerator{
     private struct Edge
     {
@@ -65,8 +66,8 @@ public class CoverPointsGenerator{
     }
 
     public void Remove() =>
-        GameObject.FindGameObjectsWithTag(CoverPoint.tag).ToList().ForEach(GameObject.DestroyImmediate);
-    
+        GameObject.FindGameObjectsWithTag(CoverPoint.tag).ToList().ForEach(Undo.DestroyObjectImmediate);
+
     private IEnumerable<Triangle> GetNavMeshTriangles(NavMeshTriangulation nmt) =>
         nmt.indices
             .Select((e, i) => new { vertexIndex = e, index = i })
@@ -95,7 +96,7 @@ public class CoverPointsGenerator{
                 Range(1, pointCount).ToList().ForEach(i =>
                 {
                    var go = GameObject.Instantiate(CoverPoint, e.v + i*offset*d, Quaternion.LookRotation(Quaternion.Euler(0, -90, 0) * d), CoverPointParent);
-                   Undo.RecordObject(go, "Instatiating cover-points");
+                   Undo.RegisterCreatedObjectUndo(go, "Instatiating cover-points");
                 });
             }
         });
