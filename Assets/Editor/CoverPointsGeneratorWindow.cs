@@ -1,7 +1,5 @@
-﻿using System.Linq;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
-using static CoverPointsGenerator;
 
 public class CoverPointsGeneratorWindow: EditorWindow
 {
@@ -14,13 +12,11 @@ public class CoverPointsGeneratorWindow: EditorWindow
 
     private void OnGUI()
     {
-        if (cpg == null)
-            cpg = new CoverPointsGenerator(); //TODO: Static instead?
+        Init();
 
         GUILayout.Label("Settings", EditorStyles.boldLabel);
+
         cpg.CoverPoint = EditorGUILayout.ObjectField("Prefab", cpg.CoverPoint, typeof(GameObject), true) as GameObject;
-        if (cpg.CoverPointParent == null)
-            cpg.CoverPointParent = GameObject.FindGameObjectWithTag("CoverPointParent").transform;
         cpg.CoverPointParent = EditorGUILayout.ObjectField("Scene Parent", cpg.CoverPointParent, typeof(Transform), true) as Transform;
         cpg.CoverPointsDistance = EditorGUILayout.FloatField("Desired distance", cpg.CoverPointsDistance);
         cpg.MaxInnerEdgeLength = EditorGUILayout.FloatField("Max inner-edge length", cpg.MaxInnerEdgeLength);
@@ -28,15 +24,21 @@ public class CoverPointsGeneratorWindow: EditorWindow
         if (GUILayout.Button("Generate"))
             cpg.Generate();
 
-        //cpg.CoverPoint?.tag
-        var coverPoints = GameObject.FindGameObjectsWithTag("CoverPoint");
-        var coverCount = coverPoints?.Length ?? 0;
-
+        var coverCount = GameObject.FindGameObjectsWithTag(cpg.CoverPoint.tag)?.Length ?? 0;
         EditorGUI.BeginDisabledGroup(coverCount == 0);
         if (GUILayout.Button("Remove"))
             cpg.Remove();
         EditorGUI.EndDisabledGroup();
 
         EditorGUILayout.LabelField($"Count: {coverCount}");
+    }
+
+    private void Init()
+    {
+        if (cpg == null)
+            cpg = new CoverPointsGenerator(); //TODO: Static instead?
+
+        if (cpg.CoverPointParent == null)
+            cpg.CoverPointParent = GameObject.FindGameObjectWithTag("CoverPointParent").transform;
     }
 }

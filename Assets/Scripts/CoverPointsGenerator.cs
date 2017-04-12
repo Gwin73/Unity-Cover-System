@@ -48,8 +48,8 @@ public class CoverPointsGenerator{
         Stopwatch sw = new Stopwatch();
         sw.Start();
 
-        var triangles = GetNavMeshTriangles(NavMesh.CalculateTriangulation());
-        var edges = GetMeshEdges(triangles);
+        var triangles = GetTriangles(NavMesh.CalculateTriangulation());
+        var edges = GetEdges(triangles);
         var inTrianglesCount = InTrianglesCount(edges, triangles);
 
         var filtered = edges
@@ -68,14 +68,14 @@ public class CoverPointsGenerator{
     public void Remove() =>
         GameObject.FindGameObjectsWithTag(CoverPoint.tag).ToList().ForEach(Undo.DestroyObjectImmediate);
 
-    private IEnumerable<Triangle> GetNavMeshTriangles(NavMeshTriangulation nmt) =>
+    private IEnumerable<Triangle> GetTriangles(NavMeshTriangulation nmt) =>
         nmt.indices
-            .Select((e, i) => new { vertexIndex = e, index = i })
+            .Select((e, i) => new {vertexIndex = e, index = i })
             .GroupBy(x => x.index / 3, x => x.vertexIndex)
             .Select(grp => grp.Select(vi => nmt.vertices[vi]).ToList())
             .Select(l => new Triangle(l[0], l[1], l[2]));
 
-    private IEnumerable<Edge> GetMeshEdges(IEnumerable<Triangle> triangles) =>
+    private IEnumerable<Edge> GetEdges(IEnumerable<Triangle> triangles) =>
         triangles
              .SelectMany(t => t.edges)
              .Distinct();
