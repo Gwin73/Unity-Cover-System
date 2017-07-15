@@ -4,13 +4,13 @@ using UnityEngine;
 public class CoverPointsGeneratorWindow: EditorWindow
 {
     [SerializeField]
-    private CoverPointsGenerator cpg;
+     CoverPointsGenerator cpg;
 
     [MenuItem("Window/CoverPointsGenerator")]
     public static void ShowWindow() =>
         GetWindow(typeof(CoverPointsGeneratorWindow));
 
-    private void OnGUI()
+    void OnGUI()
     {
         Init();
 
@@ -33,10 +33,10 @@ public class CoverPointsGeneratorWindow: EditorWindow
         EditorGUILayout.LabelField($"Count: {coverCount}");
     }
 
-    private void Init()
+    void Init()
     {
         if (cpg == null)
-            cpg = new CoverPointsGenerator(); //TODO: Static instead?
+            cpg = new CoverPointsGenerator();
 
         if (cpg.CoverPointParent == null)
             cpg.CoverPointParent = GameObject.FindGameObjectWithTag("CoverPointParent").transform;

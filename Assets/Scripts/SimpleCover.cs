@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
@@ -8,26 +6,30 @@ using UnityEngine.AI;
 public class SimpleCover : MonoBehaviour {
     public float CoverLeanDistance = 1;
     
-    private Transform player;
+    Transform player;
 
-    private void Start() =>
+    void Start() =>
         player = GameObject.FindGameObjectWithTag("Player").transform;
 
-    public Vector3 GetNearestShootableCover(Vector3 point) =>
-       GetShootableCovers() //No elements
-           .Aggregate((agg, next) => //TODO: 1 Use shortest path instead + listempty crash 
-                   Vector3.Distance(next, point) < Vector3.Distance(agg, point) ? next : agg);
-
+    public Vector3? GetNearestShootableCover(Vector3 point)
+    {
+        var sC = GetShootableCovers();
+        if (sC.Any())
+            return sC.Aggregate((agg, next) => 
+                Vector3.Distance(next, point) < Vector3.Distance(agg, point) ? next : agg); //TODO: 1 Use shortest path instead
+        return null;
+    }
+      
     public IEnumerable<Transform> GetCovers() => 
         GameObject.FindGameObjectsWithTag("CoverPoint") //TODO: Cache?
             .Select(g => g.transform)
             .Where(t => !PlayerLOS(t.position))
             .Where(t => Reachable(transform.position, t.position));
 
-    private bool PlayerLOS(Vector3 u) =>
+    bool PlayerLOS(Vector3 u) =>
         Physics.Raycast(u, player.position - u, out RaycastHit hit) && hit.collider.CompareTag("Player");
 
-    private bool Reachable(Vector3 from, Vector3 to) => 
+    bool Reachable(Vector3 from, Vector3 to) => 
         NavMesh.CalculatePath(from, to, NavMesh.AllAreas, new NavMeshPath());
 
     public IEnumerable<Vector3> GetShootableCovers() =>
@@ -35,7 +37,7 @@ public class SimpleCover : MonoBehaviour {
             .Where(PlayerShootable)
             .Select(t => t.position);
 
-    private bool PlayerShootable(Transform t) =>
-        new List<Vector3>() { CoverLeanDistance *- t.right, CoverLeanDistance* t.right }
+    bool PlayerShootable(Transform t) =>
+        new List<Vector3>{ CoverLeanDistance *- t.right, CoverLeanDistance* t.right }
             .Any(d => PlayerLOS(t.position + d));
 }
